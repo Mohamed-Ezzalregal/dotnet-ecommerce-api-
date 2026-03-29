@@ -1,22 +1,34 @@
-# E-Commerce API
+# E-Commerce REST API
 
-A RESTful API built with ASP.NET Core 8 for managing products and categories, with JWT authentication.
+A production-ready RESTful API built with **ASP.NET Core 8** for managing an e-commerce platform — featuring JWT authentication, product & category management, and full Swagger documentation.
+
+> Built with GitHub Copilot to accelerate development.
+
+---
 
 ## Tech Stack
 
-- ASP.NET Core 8 Web API
-- Entity Framework Core
-- MySQL (Pomelo Provider)
-- JWT Authentication
-- Swagger / OpenAPI
+| Layer | Technology |
+|-------|-----------|
+| Framework | ASP.NET Core 8 Web API |
+| ORM | Entity Framework Core |
+| Database | MySQL (Pomelo Provider) |
+| Auth | JWT Bearer Tokens |
+| Docs | Swagger / OpenAPI |
+| Language | C# |
+
+---
 
 ## Features
 
-- User Registration & Login with JWT tokens
+- User Registration & Login with JWT authentication
 - Full CRUD for Products and Categories
-- One-to-Many relationship (Category → Products)
+- One-to-Many relationship (Category -> Products)
 - Data validation using Data Annotations
-- Swagger UI for API testing
+- Swagger UI for interactive API testing
+- Clean architecture: Controllers -> Services -> Repositories
+
+---
 
 ## Getting Started
 
@@ -27,30 +39,27 @@ A RESTful API built with ASP.NET Core 8 for managing products and categories, wi
 
 ### Setup
 
-1. Clone the repository
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/ecommerce-api.git
-   cd ecommerce-api/TestApi
-   ```
+```bash
+# 1. Clone the repo
+git clone https://github.com/Mohamed-Ezzalregal/dotnet-ecommerce-api-.git
+cd dotnet-ecommerce-api-/TestApi
 
-2. Update the connection string in `appsettings.json`
-   ```json
-   "ConnectionStrings": {
-     "DefaultConnection": "Server=localhost;Database=YourDbName;User=root;Password=YOUR_PASSWORD"
-   }
-   ```
+# 2. Update connection string in appsettings.json
+"ConnectionStrings": {
+  "DefaultConnection": "Server=localhost;Database=ecommercedb;User=root;Password=YOUR_PASSWORD"
+}
 
-3. Apply migrations
-   ```bash
-   dotnet ef database update
-   ```
+# 3. Apply migrations
+dotnet ef database update
 
-4. Run the project
-   ```bash
-   dotnet run
-   ```
+# 4. Run
+dotnet run
 
-5. Open Swagger UI at `https://localhost:5001/swagger`
+# 5. Open Swagger UI
+https://localhost:5001/swagger
+```
+
+---
 
 ## API Endpoints
 
@@ -59,7 +68,7 @@ A RESTful API built with ASP.NET Core 8 for managing products and categories, wi
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/auth/register` | Register a new user |
-| POST | `/api/auth/login` | Login and get JWT token |
+| POST | `/api/auth/login` | Login & receive JWT token |
 
 ### Products
 
@@ -67,9 +76,9 @@ A RESTful API built with ASP.NET Core 8 for managing products and categories, wi
 |--------|----------|-------------|
 | GET | `/api/products` | Get all products |
 | GET | `/api/products/{id}` | Get product by ID |
-| POST | `/api/products` | Create a new product |
-| PUT | `/api/products/{id}` | Update a product |
-| DELETE | `/api/products/{id}` | Delete a product |
+| POST | `/api/products` | Create product (Auth required) |
+| PUT | `/api/products/{id}` | Update product (Auth required) |
+| DELETE | `/api/products/{id}` | Delete product (Auth required) |
 
 ### Categories
 
@@ -77,19 +86,31 @@ A RESTful API built with ASP.NET Core 8 for managing products and categories, wi
 |--------|----------|-------------|
 | GET | `/api/categories` | Get all categories |
 | GET | `/api/categories/{id}` | Get category by ID |
-| POST | `/api/categories` | Create a new category |
-| PUT | `/api/categories/{id}` | Update a category |
-| DELETE | `/api/categories/{id}` | Delete a category |
+| POST | `/api/categories` | Create category (Auth required) |
+| PUT | `/api/categories/{id}` | Update category (Auth required) |
+| DELETE | `/api/categories/{id}` | Delete category (Auth required) |
+
+---
 
 ## Project Structure
 
 ```
 TestApi/
-├── Controllers/        # API endpoints
+├── Controllers/        # API endpoints (Auth, Products, Categories)
 ├── Models/             # Database entities
 ├── DTOs/               # Data Transfer Objects
-├── Data/               # DbContext
-├── Services/           # Business logic
+├── Data/               # EF Core DbContext
+├── Services/           # Business logic layer
 ├── Migrations/         # EF Core migrations
-└── Program.cs          # App configuration
+└── Program.cs          # App configuration & middleware
 ```
+
+---
+
+## Author
+
+**Mohamed Ezzalregal**
+
+- [LinkedIn](https://www.linkedin.com/in/mohamedayman-469994243)
+- [GitHub](https://github.com/Mohamed-Ezzalregal)
+- mohaamed.ezzalregal@gmail.com
