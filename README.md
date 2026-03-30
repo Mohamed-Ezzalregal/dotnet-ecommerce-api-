@@ -25,6 +25,7 @@ A production-ready RESTful API built with **ASP.NET Core 8** for managing an e-c
 - Full CRUD for Products and Categories
 - One-to-Many relationship (Category -> Products)
 - Data validation using Data Annotations
+- Global Error Handling Middleware
 - Swagger UI for interactive API testing
 - Clean architecture: Controllers -> Services -> Repositories
 
@@ -98,8 +99,9 @@ https://localhost:5001/swagger
 TestApi/
 ├── Controllers/        # API endpoints (Auth, Products, Categories)
 ├── Models/             # Database entities
-├── DTOs/               # Data Transfer Objects
+├── DTOs/               # Data Transfer Objects with validation
 ├── Data/               # EF Core DbContext
+├── Middlewares/        # Custom middleware (Error Handling)
 ├── Services/           # Business logic layer
 ├── Migrations/         # EF Core migrations
 └── Program.cs          # App configuration & middleware
