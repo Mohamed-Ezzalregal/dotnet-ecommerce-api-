@@ -4,6 +4,7 @@ using TestApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using TestApi.Middlewares;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,7 +55,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Endpoint 1 - رسالة "Hello World"
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
