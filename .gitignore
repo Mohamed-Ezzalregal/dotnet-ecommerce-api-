@@ -1,2 +1,19 @@
+## Build output
+**/bin/
+**/obj/
+
+## IDE
+.vs/
+*.user
+*.suo
+
+## Logs
+TestApi/Logs/
+
+## OS
+Thumbs.db
+.DS_Store
+
+## Project planning (private)
 PLAN.md
 ROADMAP.md

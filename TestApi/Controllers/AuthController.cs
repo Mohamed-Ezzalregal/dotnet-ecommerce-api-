@@ -1,12 +1,13 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using TestApi.Data;
-using TestApi.DTOs;
-using TestApi.Models;
+using TestApi.Infrastructure.Data;
+using TestApi.Application.DTOs;
+using TestApi.Domain.Models;
 
 namespace TestApi.Controllers;
 
@@ -16,11 +17,15 @@ public class AuthController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly IMapper _mapper;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(AppDbContext context, IConfiguration configuration)
+    public AuthController(AppDbContext context, IConfiguration configuration, IMapper mapper, ILogger<AuthController> logger)
     {
         _context = context;
         _configuration = configuration;
+        _mapper = mapper;
+        _logger = logger;
     }
 
     [HttpPost("register")]
@@ -29,16 +34,13 @@ public class AuthController : ControllerBase
         if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
             return BadRequest("Email already exists");
 
-        var user = new User
-        {
-            Username = dto.Username,
-            Email = dto.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-            Role = "User"
-        };
+        var user = _mapper.Map<User>(dto);
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+        user.Role = "User";
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
+        _logger.LogInformation("New user registered: {Email}", user.Email);
 
         return Ok("User registered successfully");
     }
@@ -54,6 +56,7 @@ public class AuthController : ControllerBase
             return Unauthorized("Invalid email or password");
 
         var token = GenerateToken(user);
+        _logger.LogInformation("User logged in: {Email}", user.Email);
 
         return Ok(new { Token = token });
     }

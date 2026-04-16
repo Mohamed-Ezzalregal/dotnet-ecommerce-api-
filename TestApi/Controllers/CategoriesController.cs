@@ -1,8 +1,10 @@
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TestApi.Data;
-using TestApi.DTOs;
-using TestApi.Models;
+using TestApi.Application.DTOs;
+using TestApi.Application.Exceptions;
+using TestApi.Application.Interfaces;
+using TestApi.Domain.Models;
 
 namespace TestApi.Controllers;
 
@@ -10,53 +12,73 @@ namespace TestApi.Controllers;
 [Route("api/[controller]")]
 public class CategoriesController : ControllerBase
 {
-    private readonly AppDbContext _db;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
+    private readonly ILogger<CategoriesController> _logger;
 
-    public CategoriesController(AppDbContext db)
+    public CategoriesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<CategoriesController> logger)
     {
-        _db = db;
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+        _logger = logger;
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<Category>>> GetAll()
+    public async Task<ActionResult<IEnumerable<CategoryDto>>> GetAll()
     {
-        return Ok(await _db.Categories.ToListAsync());
+        var categories = await _unitOfWork.Categories.GetAllAsync();
+        var categoriesDto = _mapper.Map<IEnumerable<CategoryDto>>(categories);
+        return Ok(categoriesDto);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Category>> GetById(int id)
+    public async Task<ActionResult<CategoryDto>> GetById(int id)
     {
-        var category = await _db.Categories.FindAsync(id);
-        if (category is null) return NotFound("Category not found");
-        return Ok(category);
+        var category = await _unitOfWork.Categories.GetByIdAsync(id);
+        if (category is null) throw new NotFoundException("Category not found");
+        var categoryDto = _mapper.Map<CategoryDto>(category);
+        return Ok(categoryDto);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
-    public async Task<ActionResult<Category>> Create(CreateCategoryDto dto)
+    public async Task<ActionResult<CategoryDto>> Create(CreateCategoryDto dto)
     {
-        var category = new Category { Name = dto.Name };
-        _db.Categories.Add(category);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { id = category.Id }, category);
+        var category = _mapper.Map<Category>(dto);
+        await _unitOfWork.Categories.AddAsync(category);
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Category created: {CategoryId} - {CategoryName}", category.Id, category.Name);
+        var categoryDto = _mapper.Map<CategoryDto>(category);
+        return CreatedAtAction(nameof(GetById), new { id = category.Id }, categoryDto);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(int id, CreateCategoryDto dto)
+    public async Task<ActionResult<CategoryDto>> Update(int id, CreateCategoryDto dto)
     {
-        var category = await _db.Categories.FindAsync(id);
-        if (category is null) return NotFound("Category not found");
-        category.Name = dto.Name;
-        await _db.SaveChangesAsync();
-        return Ok(category);
+        var category = await _unitOfWork.Categories.GetByIdAsync(id);
+        if (category is null) throw new NotFoundException("Category not found");
+        _mapper.Map(dto, category);
+        _unitOfWork.Categories.Update(category);
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Category updated: {CategoryId} - {CategoryName}", category.Id, category.Name);
+        var categoryDto = _mapper.Map<CategoryDto>(category);
+        return Ok(categoryDto);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
-        var category = await _db.Categories.FindAsync(id);
-        if (category is null) return NotFound("Category not found");
-        _db.Categories.Remove(category);
-        await _db.SaveChangesAsync();
+        var category = await _unitOfWork.Categories.GetByIdAsync(id);
+        if (category is null) throw new NotFoundException("Category not found");
+
+        if (await _unitOfWork.Categories.HasProductsAsync(id))
+            throw new BadRequestException("Cannot delete category that has products. Remove the products first.");
+
+        _unitOfWork.Categories.Remove(category);
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Category deleted: {CategoryId}", id);
         return Ok("Deleted!");
     }
 }
